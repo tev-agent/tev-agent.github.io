@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tev: Scaling Long-Horizon Agentic Environments with Dense Progress Rewards</title>
+<meta name="description" content="Tev-Gym is the first long-horizon agent training dataset with verifiable, dense, progressive rewards: 1,170 environments across 7 domains, built latent-world-first. RL with progress-potential reward shaping yields Tev-27B and Tev-320B.">
+<meta name="author" content="Wenbo Hu, Shraman Pramanick, Krishna Kumar Singh, Nanyun Peng, Kai-Wei Chang, Yong Jae Lee">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tev: Scaling Long-Horizon Agentic Environments with Dense Progress Rewards">
+<meta property="og:description" content="Latent-world-first synthesis of verifiable long-horizon agent tasks, and a dense progress reward (PPRS) that makes them trainable.">
+<meta property="og:url" content="https://tev-agent.github.io/">
+<meta property="og:image" content="https://tev-agent.github.io/static/images/teaser.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#c8102e">
+<link rel="icon" href="static/images/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="static/css/style.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script defer src="static/js/main.js"></script>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="sc">Tev</span><span class="dot">.</span></a>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#video">Video</a></li>
+      <li><a href="#motivation">Motivation</a></li>
+      <li><a href="#synthesis">Data</a></li>
+      <li><a href="#reward">Reward</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#ablations">Ablations</a></li>
+      <li><a href="#example">Example</a></li>
+      <li><a href="#bibtex">BibTeX</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <h1><span class="name sc">Tev</span>: Scaling Long-Horizon Agentic Environments with Dense Progress Rewards</h1>
+
+    <div class="authors">
+      <a href="https://gordonhu608.github.io/">Wenbo Hu</a><sup>1,2</sup><span class="sep"></span>
+      <a href="https://shramanpramanick.github.io/">Shraman Pramanick</a><sup>1</sup><span class="sep"></span>
+      <a href="https://krsingh.cs.ucdavis.edu/">Krishna Kumar Singh</a><sup>1</sup><br>
+      <a href="https://violetpeng.github.io/">Nanyun Peng</a><sup>2</sup><span class="sep"></span>
+      <a href="https://web.cs.ucla.edu/~kwchang/">Kai-Wei Chang</a><sup>2</sup><span class="sep"></span>
+      <a href="https://pages.cs.wisc.edu/~yongjaelee/">Yong Jae Lee</a><sup>1</sup>
+    </div>
+    <div class="affils">
+      <span class="affil"><sup>1</sup><img class="adobe" src="static/images/adobe_research.svg" alt="Adobe Research"></span>
+      <span class="affil"><sup>2</sup><img class="ucla" src="static/images/ucla.svg" alt="UCLA"> University of California, Los Angeles</span>
+    </div>
+
+    <div class="buttons">
+      <span class="btn soon" title="arXiv link coming soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+        arXiv <span class="tag">soon</span>
+      </span>
+      <span class="btn soon" title="Code release coming soon">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        Code <span class="tag">soon</span>
+      </span>
+      <span class="btn soon" title="Model and data release coming soon">
+        <img src="static/images/hf.png" alt="" aria-hidden="true">
+        Models &amp; Data <span class="tag">soon</span>
+      </span>
+      <span class="btn soon" title="X post coming soon">
+        <svg class="x-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X <span class="tag">soon</span>
+      </span>
+      <a class="btn" href="#bibtex">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        BibTeX
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="wrap" id="overview">
+  <figure class="figure video launch">
+    <div class="frame">
+      <video controls playsinline preload="metadata" width="1920" height="1080" poster="static/images/launch_poster.webp" aria-label="Tev launch video">
+        <source src="videos/tev_launch_v6.mp4" type="video/mp4">
+        Your browser does not play MP4 video. <a href="videos/tev_launch_v6.mp4">Download the launch video</a>.
+      </video>
+    </div>
+  </figure>
+
+  <figure class="figure">
+    <a class="frame" href="static/images/teaser.png" target="_blank" rel="noopener">
+      <img src="static/images/teaser.webp" width="2590" height="1411" alt="Left: Tev versus Qwen base on ALE-CM, TB 3.0-CM, TB 4.0-CM and TB 2.1, and all models on ALE-CM ranked by Pass@5. Right: the latent-world-first pipeline, from latent world to task environment to progress reward.">
+    </a>
+    <figcaption><b>Overview.</b> Left: <span class="sc">Tev</span>'s results on ALE-CM and its zero-shot generalization to Terminal-Bench (TB) 3.0-CM, 4.0-CM and 2.1, across two model scales. <span class="sc">Tev</span>-27B matches GPT-6 Astra and Claude Opus 5 at Pass@5 on ALE-CM. Right: our <i>latent-world-first</i> data synthesis, in brief.</figcaption>
+  </figure>
+
+  <div class="tldr"><b class="label">TL;DR</b>We build long-horizon agent tasks <i>backward</i> from a hidden, known-correct <b>latent world</b>, so every task comes with an exact verifier and a dense, per-step <b>progress reward</b>. RL with that reward lifts open 9B, 27B and 320B models on long-horizon benchmarks, including ones never seen in training.</div>
+
+  <div class="stats">
+    <div class="stat"><span class="big">1,170</span><span class="what">verified environments</span><span class="ctx">across 7 domains, the first long-horizon training set with progressive rewards</span></div>
+    <div class="stat"><span class="big">12.4<small> min</small></span><span class="what">median agent rollout</span><span class="ctx">about 6&times; longer than the longest prior corpus (SWE-Smith, 2.0 min)</span></div>
+    <div class="stat"><span class="big">0.28</span><span class="what">ALE-CM Pass@5</span><span class="ctx"><span class="sc">Tev</span>-27B, +65% over Qwen3.8-27B; matches GPT-6 Astra and Claude Opus 5</span></div>
+    <div class="stat"><span class="big">2.5&times;</span><span class="what">TB 4.0-CM Pass@1</span><span class="ctx">0.04 &rarr; 0.10 with no Terminal-Bench task used for training</span></div>
+  </div>
+
+  <section class="narrow" id="abstract">
+    <span class="eyebrow">Abstract</span>
+    <h2>Abstract</h2>
+    <div class="abstract">
+      <p>Long-horizon agents have drawn growing attention for their ability to work autonomously&mdash;from hours to days&mdash;on economically valuable tasks, a capability essential to automated discovery and recursive self-improvement (RSI). Yet open-source models still struggle on long-horizon tasks, largely for lack of both training data and a working recipe, and scaling both is hard: long, complex tasks are difficult to curate and verify, and their rewards are sparse. We address both. First, we introduce <b><span class="sc">Tev</span>-Gym</b>, the <i>first</i> long-horizon agent training dataset with verifiable, dense, progressive rewards&mdash;1,170 verified task environments across 7 domains. It is built on a <i>latent-world-first</i> approach that first constructs a <i>latent world</i>: a complete and correct hidden specification of the task domain, workflow, and expected state after each step. Each task is then progressively rendered from this specification into an agent-facing environment, enabling controllable complexity and a natural progress metric.</p>
+      <p>Second, we turn this metric into a training recipe: via progress-potential reward shaping (PPRS), we convert progress into a dense per-step reward that improves training efficiency and makes otherwise-intractable tasks trainable. Training with this recipe yields <b><span class="sc">Tev</span>-27B</b>, which achieves substantial gains on the Agents' Last Exam computing and math sciences domains (ALE-CM), matching GPT-6 Astra and Claude Opus 5 at Pass@5. Despite training only on ALE-related data, it generalizes to the Terminal-Bench (TB) 3.0 and 4.0 subsets, surpassing GLM 5.2 and Gemini 3.7 Flash, and reaches Claude Opus 4.8-level performance on middle-horizon tasks such as TB 2.1.</p>
+    </div>
+  </section>
+</div>
+
+<section id="video">
+  <div class="wrap">
+    <span class="eyebrow">Video</span>
+    <h2>The paper in under three minutes</h2>
+    <figure class="figure video">
+      <div class="frame">
+        <video controls playsinline preload="metadata" width="1920" height="1080" poster="static/images/academic_poster.webp" aria-label="Tev paper video">
+          <source src="videos/tev_academic.mp4" type="video/mp4">
+          Your browser does not play MP4 video. <a href="videos/tev_academic.mp4">Download the paper video</a>.
+        </video>
+      </div>
+      <figcaption>A walkthrough of the paper: the two obstacles to long-horizon training, latent-world-first synthesis, the progress reward, the results and the ablations.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="motivation">
+  <div class="wrap">
+    <span class="eyebrow">Motivation</span>
+    <h2>Why long-horizon agent training is hard</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3><span class="num">1</span>No long-horizon training corpus</h3>
+        <p>Open agentic corpora such as SWE-Smith, TMAX, Endless Terminals, CLI-Gym, SETA and Terminal-Universe hold thousands of environments, but each is a pull-request-sized fix or a short terminal session, graded by unit tests with a pass/fail signal. Genuinely long-horizon tasks exist only in small, human-authored benchmarks that take weeks of expert effort per task and are meant for evaluation, not training.</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">2</span>Terminal reward starves RL</h3>
+        <p>GRPO normalizes rewards within a group of \(G\) rollouts of the same task. Under a terminal-only reward, a group in which every rollout fails has zero advantage everywhere and contributes nothing to the gradient. If the policy solves a task with probability \(p\), a fraction \((1-p)^G\) of groups is wasted, and on long-horizon tasks an untrained open model solves roughly one in ten or fewer.</p>
+      </div>
+    </div>
+
+    <div class="card soft" style="margin-top:18px">
+      <div class="starve">
+        <div>
+          <b>How many groups carry no signal?</b>
+          <p class="muted" style="margin:4px 0 0;font-size:15.5px">Each square is one group of \(G\) rollouts. Gray groups have no successful rollout, so terminal-only reward gives every rollout in them zero advantage.</p>
+          <div class="controls">
+            <label for="p-range"><span>Solve rate \(p\)</span> <span class="val" id="p-val">0.05</span></label>
+            <input id="p-range" type="range" min="0" max="100" step="1" value="50" aria-label="Solve rate p">
+            <label for="g-range"><span>Group size \(G\)</span> <span class="val" id="g-val">8</span></label>
+            <input id="g-range" type="range" min="2" max="32" step="1" value="8" aria-label="Group size G">
+          </div>
+          <div class="readout"><span class="pct" id="waste-pct">66%</span>of groups are wasted under terminal-only reward, \((1-p)^G\). The paper's examples: 66% at \(p=0.05, G=8\) and 92% at \(p=0.01\). With <span class="sc">Tev</span>'s progress reward, a group still gets signal whenever its rollouts progress to different depths.</div>
+        </div>
+        <div>
+          <div class="dots" id="dots" aria-hidden="true"></div>
+          <div class="legend"><span><i class="waste"></i>no rollout passes: zero gradient</span><span><i></i>at least one pass</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="text-align:center;margin-top:44px"><span class="sc">Tev</span>-Gym versus prior agentic task corpora</h3>
+    <div class="tbl">
+      <table>
+        <thead>
+          <tr class="top"><th rowspan="2" style="text-align:left;padding-left:14px">Dataset</th><th rowspan="2">Size</th><th rowspan="2"># Domains</th><th colspan="2" class="grp">Agent time (min)</th><th rowspan="2">Oracle</th><th rowspan="2">Grading metric</th><th rowspan="2">Progressive<br>reward</th><th rowspan="2">P@1</th><th rowspan="2">P@8</th></tr>
+          <tr class="sub"><th>Median</th><th>Mean</th></tr>
+        </thead>
+        <tbody>
+<tr><th scope="row">SWE-Smith</th><td>50.1k</td><td>1</td><td>2.0</td><td>2.4</td><td>unit tests</td><td>pass/fail</td><td><span class="no">&#10007;</span></td><td>47%</td><td>52%</td></tr>
+<tr><th scope="row">Terminal-Universe</th><td>32.0k</td><td>3</td><td>NA</td><td>NA</td><td>pytest</td><td>pass/fail</td><td><span class="no">&#10007;</span></td><td>NA</td><td>NA</td></tr>
+<tr><th scope="row">TMAX-15K</th><td>14.6k</td><td>3</td><td>1.3</td><td>2.1</td><td>unit tests</td><td>pass/fail</td><td><span class="no">&#10007;</span></td><td>74%</td><td>80%</td></tr>
+<tr><th scope="row">SETA</th><td>4.5k</td><td>4</td><td>1.2</td><td>2.1</td><td>unit tests</td><td>test fraction</td><td><span class="no">&#10007;</span></td><td>80%</td><td>88%</td></tr>
+<tr><th scope="row">Endless Terminals</th><td>3.3k</td><td>2</td><td>0.5</td><td>0.7</td><td>unit tests</td><td>pass/fail</td><td><span class="no">&#10007;</span></td><td>83%</td><td>89%</td></tr>
+<tr><th scope="row">CLI-Gym</th><td>1.7k</td><td>4</td><td>1.9</td><td>2.3</td><td>unit tests</td><td>pass/fail</td><td><span class="no">&#10007;</span></td><td>69%</td><td>74%</td></tr>
+<tr class="ours sep"><th scope="row"><b><span class="sc">Tev</span>-Gym (ours)</b></th><td>1,170</td><td><b>7</b></td><td><b>12.4</b></td><td><b>14.8</b></td><td>latent world</td><td>staged &Phi; + pass/fail</td><td><span class="yes">&#10003;</span></td><td><b>29%</b></td><td><b>40%</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tbl-cap">Agent time is the median and mean wall-clock minutes per rollout of Gemini 3.6 Flash, from first action to last step. Difficulty is Pass@<i>k</i> of Gemini 3.6 Flash on every dataset. <span class="sc">Tev</span>-Gym tasks run the longest and are the hardest to solve.</p>
+  </div>
+</section>
+
+<section id="synthesis">
+  <div class="wrap">
+    <span class="eyebrow">Method &middot; Data</span>
+    <h2>Latent-world-first synthesis</h2>
+    <p class="lede narrow">Pipelines that ask a language model to write the task, its inputs and its checker have no true answer to check against. We build the answer first: a <b>latent world</b> \(W\), the complete and correct hidden state of the task domain. The environment is then rendered from \(W\) and corrupted in declared, invertible ways, so \(W\) is an exact answer key for the final output <i>and</i> for every intermediate state.</p>
+
+    <figure class="figure">
+      <a class="frame" href="static/images/pipeline.png" target="_blank" rel="noopener">
+        <img src="static/images/pipeline.webp" width="2678" height="1101" loading="lazy" alt="Pipeline: a coding agent writes a seeded generator that builds the latent world (oracle plus corruption plan), compiles a workflow DAG and progress contract, renders clean inputs, applies a corruption ledger, and exposes the public task while graders stay sealed.">
+      </a>
+      <figcaption><b>Latent-world-first synthesis, on one <span class="sc">Tev</span>-Gym environment.</b> The task: &ldquo;Retail Warehouse ETL Recovery. Goal: build a clean star-schema SQLite warehouse from six months of messy retail data and produce two truthful JSON sidecars.&rdquo;</figcaption>
+    </figure>
+
+    <ol class="stages">
+      <li data-n="0"><b>Task sources</b>Training data targets ALE-CM, grouped into seven domains. We sample specifications within each domain and author a generator around each one.</li>
+      <li data-n="1"><b>World construction</b>A seeded program builds the latent world \(W\) for a given seed and scale tier (e.g. a warehouse's customers, products and transactions), checks its invariants, and draws a <i>defect plan</i>.</li>
+      <li data-n="2"><b>Workflow graph</b>The workflow is compiled by code, with no model in the loop, into a DAG of dependent stages. Its critical path sets the task's horizon, and its stages form the skeleton of the progress reward.</li>
+      <li data-n="3"><b>Artifact rendering</b>\(W\) is projected into the task's input files: CSV, JSON, SQLite, <code>safetensors</code> shards, stripped binaries or infrastructure manifests. Rendering must round-trip back to \(W\) exactly.</li>
+      <li data-n="4"><b>Controlled corruption</b>The defect plan injects schema drift, duplicate and missing records, category drift, scrambled shard indices, stale caches and more. The corrupted tree \(s_0\) <i>is</i> the task; the untouched \(W\) <i>is</i> the ground truth.</li>
+      <li data-n="5"><b>Public spec &amp; hidden suite</b>The prompt \(x\) is the only description the agent sees. A sealed suite of metamorphic transforms and plausible-but-wrong counterfactuals is used at verification time.</li>
+    </ol>
+
+    <div class="eqbox">
+      Every component of an environment is a function of the same latent world:
+      $$E \;=\; \bigl(x,\; s_0,\; \mathrm{ver}_W,\; \Phi_W\bigr)$$
+      the task prompt \(x\), the corrupted input tree \(s_0\), the strict pass/fail verifier \(\mathrm{ver}_W\) and the progress potential \(\Phi_W\). This single anchor prevents <i>artifact drift</i>, where a separately generated environment, task and verifier each look valid on their own yet describe different problems.
+    </div>
+
+    <div class="props">
+      <div class="prop"><b>Diverse</b><span>Every environment is labeled on 19 coverage axes: subdomain, scale, four horizon axes, workflow stage, tool capability, artifact role, relation type, corruption class and more.</span></div>
+      <div class="prop"><b>Controllable difficulty</b><span>Scale tiers (<i>unit</i>, <i>small</i>, <i>full</i>) grow \(W\) and the operational horizon; the DAG and the number of corruption classes set the dependency depth.</span></div>
+      <div class="prop"><b>Qualified</b><span>An environment is admitted only if it passes all 8 automatic qualification gates, including 14 gaming probes that must all score 0.</span></div>
+    </div>
+
+    <p style="margin-top:22px;text-align:center"><b>Seven domains:</b></p>
+    <ul class="chips" style="justify-content:center">
+      <li>Software engineering</li><li>Data engineering</li><li>AI/CS research</li><li>Mathematics &amp; operations research</li><li>Security &amp; forensics</li><li>Infrastructure administration</li><li>Quantum computing</li>
+    </ul>
+    <p class="muted narrow" style="margin-top:18px;font-size:16px;text-align:center">The pipeline is not tied to ALE-CM. The paper's appendix walks through three more environments: AWS cost optimization with a billing-dashboard screenshot rendered from the latent world, closed-loop EnergyPlus building control, and financial-statement reconstruction from SEC-style filings.</p>
+  </div>
+</section>
+
+<section id="reward">
+  <div class="wrap">
+    <span class="eyebrow">Method &middot; Reward</span>
+    <h2>Progress-potential reward shaping (PPRS)</h2>
+    <p class="lede narrow">The latent world that grades task completion also grades its middle. Every <span class="sc">Tev</span>-Gym environment ships a <b>progress contract</b>: nodes \(v \in V\), each a checkable state of the output workspace taken from the workflow DAG, with weights \(w_v\) summing to 1 and prerequisite sets. A partial scorer \(c_v(s) \in [0,1]\) grades the agent's current workspace \(s\) against \(W\), and credit is prerequisite-gated: \(\tilde c_v(s)\) is the lowest partial score among \(v\) and all of its prerequisites.</p>
+
+    <div class="grid2" style="margin-top:22px">
+      <div class="card">
+        <b>Progress potential</b>
+        $$\Phi(s) \;=\; \sum_{v \in V} w_v\, \tilde c_v(s) \;\in\; [0,1]$$
+        <p class="muted" style="font-size:16px">Rises as the workflow is completed and falls on regressions. Because \(W\) exists before the task, every correct intermediate state is known exactly: no human step labels, trained reward model or LLM judge.</p>
+      </div>
+      <div class="card">
+        <b>Shaped rollout reward</b>
+        $$\begin{aligned} R(\tau) &= \mathbb{1}[\tau \text{ passes}] + \lambda \sum_{t=1}^{T} \bigl(\Phi(s_t) - \Phi(s_{t-1})\bigr) \\ &= \mathbb{1}[\tau \text{ passes}] + \lambda\, \Phi(s_T) \end{aligned}$$
+        <p class="muted" style="font-size:16px">With \(\lambda = 0.25\). Since \(\Phi \le 1\), any passing rollout earns \(1+\lambda\), more than any failing one. A group where nothing passes still has rewards \(\lambda\Phi(s_T^{(i)})\) that rank rollouts by how far they got.</p>
+      </div>
+    </div>
+
+    <figure class="figure pad">
+      <div class="frame"><img src="static/images/traces.svg" width="1000" height="313" loading="lazy" alt="Step plot of the progress potential over 30 turns for eight rollouts: terminal-only reward is zero for all eight, while the progress potential separates them into levels 0, 0.26, 0.69 and 1."></div>
+      <figcaption><b>The progress potential along one group (\(G=8\)) of rollouts.</b> Eight rollouts of the trained 27B model on one warehouse environment, graded live after every turn. Under terminal-only reward (red) every rollout scores 0. Under progressive rewards, two submit an incomplete warehouse (circles), five exhaust the 65k-token context (crosses), and one builds a complete warehouse, so the rewards vary within the group.</figcaption>
+    </figure>
+
+    <div class="props">
+      <div class="prop"><b>Anchored</b><span>The untouched input tree and every gaming probe score \(\Phi = 0\), and \(\Phi = 1\) exactly when the strict verifier accepts the workspace.</span></div>
+      <div class="prop"><b>Monotone</b><span>\(\Phi\) lies strictly between 0 and 1 on partially correct states and rises monotonically to 1 along the reference trajectory.</span></div>
+      <div class="prop"><b>Independent</b><span>The progress scorer, strict verifier and reference solvers have disjoint code closures, and none of the grading code ships in the public tree.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <span class="eyebrow">Experiments</span>
+    <h2>Results</h2>
+    <p class="narrow">We train Qwen3.5-9B on the 264-task <i>unit</i> tier and Qwen3.8-27B on the full <span class="sc">Tev</span>-Gym corpus with DPPO and the shaped reward above: 24 rollouts for each of 8 tasks per step, a 65,536-token budget per rollout, at most 64 tool calls, and a single <code>bash</code> tool. To test whether the recipe transfers to a larger base model, we also train GLM-5.3-Flash the same way, giving <b><span class="sc">Tev</span>-320B</b>, which we evaluate on the TB 3.0 and 4.0 subsets. We evaluate in-domain on <b>ALE-CM</b>, the computing-and-math split of Agents' Last Exam, and zero-shot on the Terminal-Bench <b>3.0</b> and <b>4.0</b> &ldquo;CM&rdquo; subsets (22 and 18 tasks) and the mid-horizon <b>TB 2.1</b>. The subsets track full-set performance (Pearson \(r = 0.96\) and \(0.97\) for TB 3.0 and 4.0 P@1), and no <span class="sc">Tev</span>-Gym environment shares a 13-gram or 8-gram with any evaluation task.</p>
+
+    <figure class="figure ranking">
+      <a class="frame" href="static/images/tb4_ranking.png" target="_blank" rel="noopener">
+        <img src="static/images/tb4_ranking.webp" width="2481" height="1024" loading="lazy" alt="Bar chart of TB 4.0-CM Pass@1 for every model, highest first: Claude Opus 5 0.52, Claude Fable 5 0.46, GPT-5.6 (sol) 0.39, Tev-320B 0.37 (+28% over its base GLM-5.3-Flash, 0.29), Grok 4.6 0.31, Claude Opus 4.8 0.27, GPT-5.6 (terra) 0.23, Grok 4.5 0.20, Claude Sonnet 5 0.19, GPT-5.6 (luna) 0.18, Tev-27B 0.10 (2.5 times its base Qwen3.8-27B, 0.04), Gemini 3.7 Flash 0.09, Gemini 3.6 Flash 0.09, GLM 5.2 0.03.">
+      </a>
+      <figcaption><b>All models on the Terminal-Bench 4.0 &ldquo;CM&rdquo; subset (TB 4.0-CM), ranked by Pass@1.</b> <span class="sc">Tev</span>-320B and <span class="sc">Tev</span>-27B are trained with our recipe from GLM-5.3-Flash and Qwen3.8-27B, respectively; each arrow gives the relative gain over its base. <sup>*</sup>Evaluated by us, not on the official leaderboard.</figcaption>
+    </figure>
+
+    <div class="tabs" role="tablist" aria-label="Result tables">
+      <button role="tab" aria-selected="true" aria-controls="tab-ale" id="t-ale">ALE-CM</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-tb3" id="t-tb3">TB 3.0-CM</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-tb4" id="t-tb4">TB 4.0-CM</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-tb21" id="t-tb21">TB 2.1</button>
+    </div>
+
+    <div class="panel" id="tab-ale" role="tabpanel" aria-labelledby="t-ale">
+      <p><b>Long horizon, in domain.</b> <span class="sc">Tev</span>-27B raises P@5 from 0.17 to <b>0.28</b>, matching GPT-6 Astra and Claude Opus 5, and closes more than two-thirds of the gap to Claude Fable 5 (0.33). It produces 33% more full solutions (P@1) than its base, and beats Qwen3.8-2.4T-A95B under the same harness on P@1. <span class="sc">Tev</span>-9B nearly doubles its base's best-of-5 solve rate.</p>
+      <div class="tbl wide sticky-col">
+        <table>
+          <thead>
+            <tr class="top"><th rowspan="2" style="text-align:left;padding-left:14px">Model</th><th rowspan="2">Harness</th><th colspan="4" class="grp vr">Math &amp; Science</th><th colspan="4" class="grp vr">ML</th><th colspan="4" class="grp vr">Coding &amp; System</th><th colspan="4" class="grp vr">All (Avg)</th></tr>
+            <tr class="sub"><th class="vr">S@1</th><th>S@5</th><th>P@1</th><th>P@5</th><th class="vr">S@1</th><th>S@5</th><th>P@1</th><th>P@5</th><th class="vr">S@1</th><th>S@5</th><th>P@1</th><th>P@5</th><th class="vr">S@1</th><th>S@5</th><th>P@1</th><th>P@5</th></tr>
+          </thead>
+          <tbody>
+<tr class="group"><td colspan="18"><i>Frontier API models</i></td></tr>
+<tr><th scope="row">GPT-6 Astra</th><td>Codex</td><td class="vr">0.58</td><td>0.58</td><td>0.38</td><td>0.38</td><td class="vr">0.48</td><td>0.49</td><td>0.20</td><td>0.20</td><td class="vr">0.81</td><td>0.85</td><td>0.20</td><td>0.20</td><td class="vr">0.62</td><td>0.63</td><td>0.28</td><td>0.28</td></tr>
+<tr><th scope="row">Claude Fable 5</th><td>Claude Code</td><td class="vr">0.47</td><td>0.51</td><td>0.38</td><td>0.38</td><td class="vr">0.52</td><td>0.57</td><td>0.24</td><td>0.40</td><td class="vr">0.83</td><td>0.90</td><td>0.20</td><td>0.20</td><td class="vr">0.58</td><td>0.63</td><td>0.29</td><td>0.33</td></tr>
+<tr><th scope="row">GPT-5.6 (sol)</th><td>Codex</td><td class="vr">0.50</td><td>0.51</td><td>0.38</td><td>0.38</td><td class="vr">0.46</td><td>0.49</td><td>0.20</td><td>0.20</td><td class="vr">0.82</td><td>0.85</td><td>0.20</td><td>0.20</td><td class="vr">0.58</td><td>0.60</td><td>0.28</td><td>0.28</td></tr>
+<tr><th scope="row">GPT-5.6 (terra)</th><td>Codex</td><td class="vr">0.51</td><td>0.56</td><td>0.38</td><td>0.38</td><td class="vr">0.25</td><td>0.26</td><td>0.00</td><td>0.00</td><td class="vr">0.75</td><td>0.83</td><td>0.20</td><td>0.20</td><td class="vr">0.50</td><td>0.55</td><td>0.22</td><td>0.22</td></tr>
+<tr><th scope="row">Claude Opus 5</th><td>Claude Code</td><td class="vr">0.51</td><td>0.53</td><td>0.38</td><td>0.38</td><td class="vr">0.43</td><td>0.46</td><td>0.20</td><td>0.20</td><td class="vr">0.85</td><td>0.87</td><td>0.20</td><td>0.20</td><td class="vr">0.58</td><td>0.60</td><td>0.28</td><td>0.28</td></tr>
+<tr><th scope="row">Claude Sonnet 5</th><td>Claude Code</td><td class="vr">0.50</td><td>0.51</td><td>0.38</td><td>0.38</td><td class="vr">0.39</td><td>0.56</td><td>0.12</td><td>0.40</td><td class="vr">0.80</td><td>0.87</td><td>0.20</td><td>0.20</td><td class="vr">0.55</td><td>0.62</td><td>0.26</td><td>0.33</td></tr>
+<tr><th scope="row">Claude Opus 4.8</th><td>Claude Code</td><td class="vr">0.48</td><td>0.51</td><td>0.38</td><td>0.38</td><td class="vr">0.31</td><td>0.33</td><td>0.00</td><td>0.00</td><td class="vr">0.80</td><td>0.86</td><td>0.20</td><td>0.20</td><td class="vr">0.52</td><td>0.55</td><td>0.22</td><td>0.22</td></tr>
+<tr><th scope="row">Gemini 3.7 Flash</th><td>Gemini CLI</td><td class="vr">0.48</td><td>0.50</td><td>0.38</td><td>0.38</td><td class="vr">0.26</td><td>0.29</td><td>0.00</td><td>0.00</td><td class="vr">0.84</td><td>0.86</td><td>0.20</td><td>0.20</td><td class="vr">0.52</td><td>0.54</td><td>0.22</td><td>0.22</td></tr>
+<tr><th scope="row">Gemini 3.6 Flash</th><td>Gemini CLI</td><td class="vr">0.48</td><td>0.51</td><td>0.35</td><td>0.38</td><td class="vr">0.25</td><td>0.26</td><td>0.00</td><td>0.00</td><td class="vr">0.81</td><td>0.86</td><td>0.20</td><td>0.20</td><td class="vr">0.51</td><td>0.54</td><td>0.21</td><td>0.22</td></tr>
+<tr><th scope="row">Gemini 3.1 Pro</th><td>Gemini CLI</td><td class="vr">0.49</td><td>0.52</td><td>0.35</td><td>0.38</td><td class="vr">0.27</td><td>0.29</td><td>0.00</td><td>0.00</td><td class="vr">0.82</td><td>0.88</td><td>0.20</td><td>0.20</td><td class="vr">0.52</td><td>0.56</td><td>0.21</td><td>0.22</td></tr>
+<tr class="group"><td colspan="18"><i>Open-source models</i></td></tr>
+<tr><th scope="row">Qwen3.8-2.4T-A95B</th><td>Vanillux2</td><td class="vr">0.20</td><td>0.38</td><td>0.20</td><td>0.38</td><td class="vr">0.10</td><td>0.20</td><td>0.04</td><td>0.20</td><td class="vr">0.74</td><td>0.86</td><td>0.16</td><td>0.20</td><td class="vr">0.32</td><td>0.46</td><td>0.14</td><td>0.28</td></tr>
+<tr><th scope="row">DeepSeek-V4-pro</th><td>Vanillux2</td><td class="vr">0.12</td><td>0.25</td><td>0.12</td><td>0.25</td><td class="vr">0.10</td><td>0.20</td><td>0.04</td><td>0.20</td><td class="vr">0.73</td><td>0.88</td><td>0.16</td><td>0.20</td><td class="vr">0.29</td><td>0.41</td><td>0.11</td><td>0.22</td></tr>
+<tr class="sep"><th scope="row">Qwen3.5-9B (base)</th><td>Vanillux2</td><td class="vr">0.07</td><td>0.12</td><td>0.00</td><td>0.00</td><td class="vr">0.19</td><td>0.26</td><td>0.00</td><td>0.00</td><td class="vr"><b>0.59</b></td><td>0.73</td><td>0.20</td><td>0.20</td><td class="vr">0.25</td><td>0.33</td><td>0.06</td><td>0.06</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-9B (ours)</th><td>Vanillux2</td><td class="vr"><b>0.14</b></td><td><b>0.29</b></td><td><b>0.04</b></td><td><b>0.12</b></td><td class="vr"><b>0.23</b></td><td>0.26</td><td>0.00</td><td>0.00</td><td class="vr">0.56</td><td>0.73</td><td>0.20</td><td>0.20</td><td class="vr"><b>0.29</b></td><td><b>0.40</b></td><td><b>0.07</b></td><td><b>0.11</b></td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-9B &minus; Qwen3.5-9B)</th><td>&ndash;</td><td class="vr"><span class="up">0.07&uarr;</span></td><td><span class="up">0.17&uarr;</span></td><td><span class="up">0.04&uarr;</span></td><td><span class="up">0.12&uarr;</span></td><td class="vr"><span class="up">0.04&uarr;</span></td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td class="vr"><span class="down">0.03&darr;</span></td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td class="vr"><span class="up">0.04&uarr;</span></td><td><span class="up">0.07&uarr;</span></td><td><span class="up">0.01&uarr;</span></td><td><span class="up">0.05&uarr;</span></td></tr>
+<tr class="sep"><th scope="row">Qwen3.8-27B (base)</th><td>Vanillux2</td><td class="vr">0.15</td><td>0.25</td><td>0.15</td><td>0.25</td><td class="vr">0.21</td><td><b>0.32</b></td><td>0.00</td><td>0.00</td><td class="vr">0.74</td><td>0.82</td><td>0.20</td><td>0.20</td><td class="vr">0.33</td><td>0.43</td><td>0.12</td><td>0.17</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-27B (ours)</th><td>Vanillux2</td><td class="vr"><b>0.23</b></td><td><b>0.50</b></td><td><b>0.23</b></td><td><b>0.50</b></td><td class="vr"><b>0.26</b></td><td>0.29</td><td>0.00</td><td>0.00</td><td class="vr"><b>0.82</b></td><td><b>0.86</b></td><td>0.20</td><td>0.20</td><td class="vr"><b>0.40</b></td><td><b>0.54</b></td><td><b>0.16</b></td><td><b>0.28</b></td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-27B &minus; Qwen3.8-27B)</th><td>&ndash;</td><td class="vr"><span class="up">0.08&uarr;</span></td><td><span class="up">0.25&uarr;</span></td><td><span class="up">0.08&uarr;</span></td><td><span class="up">0.25&uarr;</span></td><td class="vr"><span class="up">0.05&uarr;</span></td><td><span class="down">0.03&darr;</span></td><td>&ndash;</td><td>&ndash;</td><td class="vr"><span class="up">0.08&uarr;</span></td><td><span class="up">0.04&uarr;</span></td><td>&ndash;</td><td>&ndash;</td><td class="vr"><span class="up">0.07&uarr;</span></td><td><span class="up">0.11&uarr;</span></td><td><span class="up">0.04&uarr;</span></td><td><span class="up">0.11&uarr;</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">S@<i>k</i> is the mean graded score and P@<i>k</i> the fraction of tasks fully solved: @1 averages 5 rollouts per task, @5 is best-of-5.</p>
+    </div>
+
+    <div class="panel" id="tab-tb3" role="tabpanel" aria-labelledby="t-tb3" hidden>
+      <p><b>Longer horizon, zero-shot.</b> Each TB 3.0 task takes an expert about eight hours. <span class="sc">Tev</span>-27B raises P@1 from 0.09 to <b>0.14</b> (+56%), surpassing GLM 5.2, the strongest open-source model on the leaderboard. The recipe carries over to a stronger base: <span class="sc">Tev</span>-320B, trained from GLM-5.3-Flash, raises P@1 from 0.20 to <b>0.27</b> (+35%), with gains in every category and the largest on security (0.22 &rarr; 0.45), and edges past Grok 4.5 and Claude Opus 4.8. A gap to the frontier remains: Claude Opus 5 reaches 0.53.</p>
+      <div class="tbl sticky-col">
+        <table>
+          <thead>
+            <tr class="top"><th rowspan="2" style="text-align:left;padding-left:14px">Model</th><th colspan="2" class="grp vr">Software</th><th colspan="2" class="grp vr">ML</th><th colspan="2" class="grp vr">Operations</th><th colspan="2" class="grp vr">Security</th><th colspan="2" class="grp vr">All</th></tr>
+            <tr class="sub"><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th></tr>
+          </thead>
+          <tbody>
+<tr><th scope="row">Claude Fable 5</th><td class="vr">0.50</td><td>0.80</td><td class="vr">0.45</td><td>0.50</td><td class="vr">0.15</td><td>0.25</td><td class="vr">0.40</td><td>0.75</td><td class="vr">0.41</td><td>0.64</td></tr>
+<tr><th scope="row">Claude Opus 5</th><td class="vr">0.54</td><td>0.60</td><td class="vr">0.60</td><td>0.75</td><td class="vr">0.40</td><td>0.50</td><td class="vr">0.55</td><td>0.75</td><td class="vr">0.53</td><td>0.64</td></tr>
+<tr><th scope="row">GPT-5.6 (sol)</th><td class="vr">0.32</td><td>0.50</td><td class="vr">0.65</td><td>0.75</td><td class="vr">0.10</td><td>0.25</td><td class="vr">0.70</td><td>0.75</td><td class="vr">0.41</td><td>0.55</td></tr>
+<tr><th scope="row">GPT-5.6 (terra)</th><td class="vr">0.22</td><td>0.50</td><td class="vr">0.55</td><td>0.75</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.50</td><td>0.75</td><td class="vr">0.30</td><td>0.55</td></tr>
+<tr><th scope="row">GPT-5.6 (luna)</th><td class="vr">0.18</td><td>0.30</td><td class="vr">0.25</td><td>0.50</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.30</td><td>0.50</td><td class="vr">0.18</td><td>0.32</td></tr>
+<tr><th scope="row">Grok 4.6</th><td class="vr">0.24</td><td>0.50</td><td class="vr">0.50</td><td>0.75</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.55</td><td>0.75</td><td class="vr">0.30</td><td>0.50</td></tr>
+<tr><th scope="row">Claude Sonnet 5</th><td class="vr">0.18</td><td>0.40</td><td class="vr">0.25</td><td>0.50</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.20</td><td>0.25</td><td class="vr">0.16</td><td>0.32</td></tr>
+<tr><th scope="row">Claude Opus 4.8</th><td class="vr">0.20</td><td>0.70</td><td class="vr">0.10</td><td>0.25</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.40</td><td>0.50</td><td class="vr">0.19</td><td>0.50</td></tr>
+<tr><th scope="row">Grok 4.5</th><td class="vr">0.14</td><td>0.30</td><td class="vr">0.45</td><td>1.00</td><td class="vr">0.15</td><td>0.50</td><td class="vr">0.50</td><td>0.75</td><td class="vr">0.26</td><td>0.55</td></tr>
+<tr><th scope="row">GLM 5.2</th><td class="vr">0.04</td><td>0.20</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.04</td><td>0.18</td></tr>
+<tr><th scope="row">Gemini 3.7 Flash<sup>*</sup></th><td class="vr">0.08</td><td>0.20</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.20</td><td>0.50</td><td class="vr">0.07</td><td>0.18</td></tr>
+<tr><th scope="row">Gemini 3.6 Flash<sup>*</sup></th><td class="vr">0.04</td><td>0.20</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.02</td><td>0.09</td></tr>
+<tr class="sep"><th scope="row">Qwen3.8-27B (base)</th><td class="vr"><b>0.17</b></td><td><b>0.43</b></td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.09</td><td>0.24</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-27B</th><td class="vr">0.15</td><td>0.39</td><td class="vr"><b>0.19</b></td><td><b>0.25</b></td><td class="vr">0.00</td><td>0.00</td><td class="vr"><b>0.20</b></td><td>0.25</td><td class="vr"><b>0.14</b></td><td><b>0.27</b></td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-27B &minus; Qwen3.8-27B)</th><td class="vr"><span class="down">0.02&darr;</span></td><td><span class="down">0.04&darr;</span></td><td class="vr"><span class="up">0.19&uarr;</span></td><td><span class="up">0.25&uarr;</span></td><td class="vr">&ndash;</td><td>&ndash;</td><td class="vr"><span class="up">0.15&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.05&uarr;</span></td><td><span class="up">0.03&uarr;</span></td></tr>
+<tr class="sep"><th scope="row">GLM-5.3-Flash (base)</th><td class="vr">0.18</td><td>0.60</td><td class="vr">0.35</td><td>0.50</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.22</td><td>0.50</td><td class="vr">0.20</td><td>0.50</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-320B</th><td class="vr"><b>0.21</b></td><td>0.70</td><td class="vr"><b>0.40</b></td><td>0.50</td><td class="vr"><b>0.10</b></td><td>0.25</td><td class="vr"><b>0.45</b></td><td>0.50</td><td class="vr"><b>0.27</b></td><td>0.55</td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-320B &minus; GLM-5.3-Flash)</th><td class="vr"><span class="up">0.03&uarr;</span></td><td><span class="up">0.10&uarr;</span></td><td class="vr"><span class="up">0.05&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.05&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.23&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.07&uarr;</span></td><td><span class="up">0.05&uarr;</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">Terminal-Bench 3.0 &ldquo;CM&rdquo; subset (22 tasks). Leaderboard rows are from the official per-trial results (5 trials per task); <sup>*</sup>evaluated by us, not on the official leaderboard.</p>
+    </div>
+
+    <div class="panel" id="tab-tb4" role="tabpanel" aria-labelledby="t-tb4" hidden>
+      <p><b>Longer horizon, zero-shot.</b> The 27B base model fully solves only 4% of attempts. <span class="sc">Tev</span>-27B raises P@1 from 0.04 to <b>0.10</b> (2.5&times;) and P@5 from 0.19 to 0.25. <span class="sc">Tev</span>-320B raises P@1 from 0.29 to <b>0.37</b> (+28%), the strongest open-source result on this subset, trailing only Claude Opus 5 (0.52), Claude Fable 5 and GPT-5.6 (sol). Its P@5 stays at 0.56: training mainly makes the model solve the tasks it can already reach more reliably, rather than unlocking new ones.</p>
+      <div class="tbl sticky-col">
+        <table>
+          <thead>
+            <tr class="top"><th rowspan="2" style="text-align:left;padding-left:14px">Model</th><th colspan="2" class="grp vr">Software</th><th colspan="2" class="grp vr">ML</th><th colspan="2" class="grp vr">Operations</th><th colspan="2" class="grp vr">Security</th><th colspan="2" class="grp vr">All</th></tr>
+            <tr class="sub"><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th><th class="vr">P@1</th><th>P@5</th></tr>
+          </thead>
+          <tbody>
+<tr><th scope="row">Claude Fable 5</th><td class="vr">0.53</td><td>0.62</td><td class="vr">0.60</td><td>0.75</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.70</td><td>1.00</td><td class="vr">0.46</td><td>0.61</td></tr>
+<tr><th scope="row">Claude Opus 5</th><td class="vr">0.47</td><td>0.62</td><td class="vr">0.75</td><td>1.00</td><td class="vr">0.20</td><td>0.50</td><td class="vr">0.90</td><td>1.00</td><td class="vr">0.52</td><td>0.72</td></tr>
+<tr><th scope="row">GPT-5.6 (sol)</th><td class="vr">0.33</td><td>0.62</td><td class="vr">0.70</td><td>1.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.80</td><td>1.00</td><td class="vr">0.39</td><td>0.61</td></tr>
+<tr><th scope="row">GPT-5.6 (terra)</th><td class="vr">0.10</td><td>0.38</td><td class="vr">0.50</td><td>0.75</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.70</td><td>1.00</td><td class="vr">0.23</td><td>0.44</td></tr>
+<tr><th scope="row">GPT-5.6 (luna)</th><td class="vr">0.12</td><td>0.25</td><td class="vr">0.25</td><td>0.50</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.50</td><td>0.50</td><td class="vr">0.18</td><td>0.33</td></tr>
+<tr><th scope="row">Grok 4.6</th><td class="vr">0.30</td><td>0.50</td><td class="vr">0.55</td><td>0.75</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.50</td><td>1.00</td><td class="vr">0.31</td><td>0.50</td></tr>
+<tr><th scope="row">Claude Sonnet 5</th><td class="vr">0.28</td><td>0.62</td><td class="vr">0.20</td><td>0.75</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.20</td><td>0.50</td><td class="vr">0.19</td><td>0.50</td></tr>
+<tr><th scope="row">Claude Opus 4.8</th><td class="vr">0.20</td><td>0.50</td><td class="vr">0.35</td><td>0.50</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.80</td><td>1.00</td><td class="vr">0.27</td><td>0.50</td></tr>
+<tr><th scope="row">Grok 4.5</th><td class="vr">0.12</td><td>0.12</td><td class="vr">0.35</td><td>0.75</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.60</td><td>1.00</td><td class="vr">0.20</td><td>0.33</td></tr>
+<tr><th scope="row">GLM 5.2</th><td class="vr">0.06<sup>*</sup></td><td>0.24<sup>*</sup></td><td class="vr">0.02<sup>*</sup></td><td>0.10<sup>*</sup></td><td class="vr">0.00<sup>*</sup></td><td>0.00<sup>*</sup></td><td class="vr">0.00<sup>*</sup></td><td>0.00<sup>*</sup></td><td class="vr">0.03<sup>*</sup></td><td>0.13<sup>*</sup></td></tr>
+<tr><th scope="row">Gemini 3.7 Flash<sup>*</sup></th><td class="vr">0.12</td><td>0.25</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.30</td><td>0.50</td><td class="vr">0.09</td><td>0.17</td></tr>
+<tr><th scope="row">Gemini 3.6 Flash<sup>*</sup></th><td class="vr">0.20</td><td>0.25</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.09</td><td>0.11</td></tr>
+<tr class="sep"><th scope="row">Qwen3.8-27B (base)</th><td class="vr">0.07</td><td>0.31</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.04</td><td>0.19</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-27B</th><td class="vr"><b>0.17</b></td><td><b>0.33</b></td><td class="vr"><b>0.12</b></td><td><b>0.46</b></td><td class="vr">0.00</td><td>0.00</td><td class="vr">0.00</td><td>0.00</td><td class="vr"><b>0.10</b></td><td><b>0.25</b></td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-27B &minus; Qwen3.8-27B)</th><td class="vr"><span class="up">0.10&uarr;</span></td><td><span class="up">0.02&uarr;</span></td><td class="vr"><span class="up">0.07&uarr;</span></td><td><span class="up">0.21&uarr;</span></td><td class="vr">&ndash;</td><td>&ndash;</td><td class="vr">&ndash;</td><td>&ndash;</td><td class="vr"><span class="up">0.06&uarr;</span></td><td><span class="up">0.06&uarr;</span></td></tr>
+<tr class="sep"><th scope="row">GLM-5.3-Flash (base)</th><td class="vr">0.16</td><td>0.50</td><td class="vr">0.60</td><td>0.75</td><td class="vr">0.05</td><td>0.25</td><td class="vr">0.68</td><td>1.00</td><td class="vr">0.29</td><td>0.56</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-320B</th><td class="vr"><b>0.25</b></td><td>0.50</td><td class="vr"><b>0.65</b></td><td>0.75</td><td class="vr"><b>0.15</b></td><td>0.25</td><td class="vr"><b>0.70</b></td><td>1.00</td><td class="vr"><b>0.37</b></td><td>0.56</td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-320B &minus; GLM-5.3-Flash)</th><td class="vr"><span class="up">0.09&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.05&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.10&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.02&uarr;</span></td><td>&ndash;</td><td class="vr"><span class="up">0.08&uarr;</span></td><td>&ndash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">Terminal-Bench 4.0 &ldquo;CM&rdquo; subset (18 tasks). Leaderboard rows are from the official per-trial results (5 trials per task); <sup>*</sup>evaluated by us, not on the official leaderboard.</p>
+    </div>
+
+    <div class="panel" id="tab-tb21" role="tabpanel" aria-labelledby="t-tb21" hidden>
+      <p><b>Middle horizon, zero-shot.</b> No training data targets TB 2.1. <span class="sc">Tev</span>-9B still raises P@1 by 28% and P@5 by 19% over its base, and <span class="sc">Tev</span>-27B reaches <b>0.794</b> P@1, on par with Claude Opus 4.8, though still behind Claude Fable 5 and GPT-6 Astra. Training on long-horizon tasks also improves standard mid-horizon work.</p>
+      <div class="tbl narrow" style="max-width:620px">
+        <table>
+          <thead><tr><th style="text-align:left;padding-left:14px">Model</th><th>Pass@1</th><th>Pass@5</th></tr></thead>
+          <tbody>
+<tr><th scope="row">GPT-6 Astra (Codex, high)</th><td>0.874</td><td>0.944</td></tr>
+<tr><th scope="row">Fable 5 (Claude Code, xhigh)</th><td>0.838</td><td>0.933</td></tr>
+<tr><th scope="row">Opus 4.8 (Claude Code, high)</th><td>0.789</td><td>0.944</td></tr>
+<tr><th scope="row">Sonnet 5 (Claude Code, high)</th><td>0.746</td><td>0.921</td></tr>
+<tr class="sep"><th scope="row">Qwen3.5-9B (base)</th><td>0.178</td><td>0.292</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-9B (ours)</th><td><b>0.227</b></td><td><b>0.348</b></td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-9B &minus; Qwen3.5-9B)</th><td><span class="up">0.049&uarr;</span></td><td><span class="up">0.056&uarr;</span></td></tr>
+<tr class="sep"><th scope="row">Qwen3.8-27B (base)</th><td>0.764</td><td>0.864</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-27B (ours)</th><td><b>0.794</b></td><td><b>0.884</b></td></tr>
+<tr class="delta"><th scope="row">&Delta; (<span class="sc">Tev</span>-27B &minus; Qwen3.8-27B)</th><td><span class="up">0.030&uarr;</span></td><td><span class="up">0.020&uarr;</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">Terminal-Bench 2.1 (89 tasks). Frontier rows are from the official leaderboard (5 trials).</p>
+    </div>
+  </div>
+</section>
+
+<section id="ablations">
+  <div class="wrap">
+    <span class="eyebrow">Analysis</span>
+    <h2>What matters: the latent world and the dense reward</h2>
+    <div class="tbl wide sticky-col">
+      <table>
+        <thead>
+          <tr class="top"><th rowspan="2" style="text-align:left;padding-left:14px">Method</th><th colspan="3" class="grp vr">Data</th><th colspan="3" class="grp vr">Reward</th><th rowspan="2" class="vr">GPU-h<br>/ step</th><th colspan="4" class="grp vr">ALE-CM</th></tr>
+          <tr class="sub"><th class="vr">World</th><th>DAG</th><th>Hidden truth</th><th class="vr">Signal</th><th>Credit</th><th>Adv. norm.</th><th class="vr">S@1</th><th>S@5</th><th>P@1</th><th>P@5</th></tr>
+        </thead>
+        <tbody>
+<tr><th scope="row">Qwen3.5-9B (base)</th><td class="vr">&ndash;</td><td>&ndash;</td><td>&ndash;</td><td class="vr">no RL</td><td>&ndash;</td><td>&ndash;</td><td class="vr">&ndash;</td><td class="vr">0.25</td><td>0.33</td><td>0.06</td><td>0.06</td></tr>
+<tr class="ours"><th scope="row"><span class="sc">Tev</span>-9B (ours)</th><td class="vr"><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td class="vr">&Delta;&Phi;<sub>t</sub> + terminal</td><td>G<sub>t</sub>, &gamma;=1</td><td>per turn</td><td class="vr"><b>9.0</b></td><td class="vr"><b>0.29</b></td><td><b>0.40</b></td><td><b>0.07</b></td><td><b>0.11</b></td></tr>
+<tr class="group"><td colspan="12"><i>Data ablation: replace one construction step with an LLM; terminal reward, compare with Sparse</i></td></tr>
+<tr><th scope="row">Public-view verifier</th><td class="vr"><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>LLM</td><td class="vr">terminal</td><td>whole rollout</td><td>per rollout</td><td class="vr">22.3</td><td class="vr">0.24</td><td>0.35</td><td>0.04</td><td>0.06</td></tr>
+<tr><th scope="row">Prompt-first</th><td class="vr">LLM</td><td>LLM</td><td>LLM</td><td class="vr">terminal</td><td>whole rollout</td><td>per rollout</td><td class="vr">11.8</td><td class="vr">0.23</td><td>0.32</td><td>0.06</td><td>0.06</td></tr>
+<tr class="group"><td colspan="12"><i>Reward ablation: keep <span class="sc">Tev</span>-Gym, change how &Phi; enters training</i></td></tr>
+<tr><th scope="row">Sparse (terminal only)</th><td class="vr"><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td class="vr">terminal</td><td>whole rollout</td><td>per rollout</td><td class="vr">16.7</td><td class="vr">0.25</td><td>0.32</td><td>0.06</td><td>0.06</td></tr>
+<tr><th scope="row">PPRS, pooled norm.</th><td class="vr"><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td class="vr">&Delta;&Phi;<sub>t</sub> + terminal</td><td>G<sub>t</sub>, &gamma;=1</td><td>per rollout</td><td class="vr">10.9</td><td class="vr">0.28</td><td>0.35</td><td>0.06</td><td>0.06</td></tr>
+<tr><th scope="row">Direct reward (additive)</th><td class="vr"><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td class="vr">&Phi;(s<sub>t</sub>) + terminal</td><td>G<sub>t</sub>, &gamma;=0</td><td>per turn</td><td class="vr">9.7</td><td class="vr"><b>0.29</b></td><td>0.35</td><td>0.06</td><td>0.06</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tbl-cap">Ablations on ALE-CM with Qwen3.5-9B. In the data ablations, GPT-5.6 Sol (xhigh) replaces the marked construction steps. GPU-h/step is the mean time of one training step times the recipe's 32 GPUs, in H100 GPU-hours.</p>
+
+    <div class="grid2" style="margin-top:22px">
+      <div class="card">
+        <h3 style="margin-top:0">The latent world is what makes the data work</h3>
+        <p>Letting an LLM write the verifier from the agent's view (<i>public-view verifier</i>) or generate the whole task prompt-first leaves no hidden truth to check against. Neither improves over the base model in S@1 (0.24 and 0.23 vs. 0.25), and the public-view variant discards 88% of sampled groups during training. The full method leads both by 0.05&ndash;0.06 S@1 and 0.05 P@5.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Dense reward trains better and cheaper</h3>
+        <p>On the same data, PPRS improves S@1 by 0.04 over terminal-only reward at 9.0 instead of 16.7 GPU-hours per step. Per-turn normalization keeps credit for later turns, and \(\gamma = 1\) carries progress back to earlier actions. At 27B the gap widens: terminal-only reward yields almost entirely zero-advantage groups and never completes a single optimizer step.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="example">
+  <div class="wrap">
+    <span class="eyebrow">Qualitative</span>
+    <h2>Example: root-causing a crashing Kubernetes service</h2>
+    <p class="narrow">ALE-CM task <code>k8s_payment_api_root_cause_analysis</code> (Coding &amp; System). From a <code>kubectl</code> capture, the Deployment/HPA YAML and a crashing pod's log, the agent writes a JSON root-cause report with <i>verbatim</i> evidence strings and a rollback verdict. Every agent finds the same root causes, but <span class="sc">Tev</span>-27B and Claude Fable 5 ground the liveness-probe cause in the measurement that explains it and judge rollback safe. The base model and GPT-6 Astra cite only the symptoms and decline rollback, forfeiting the decisive grader component.</p>
+
+    <div class="qual">
+      <div class="qcol">
+        <div class="qhead"><b>Claude Fable 5</b><span class="score hi">0.97</span></div>
+        <div class="qstep"><span class="t">t3</span><span>Plans: read, write, validate &hellip;</span></div>
+        <div class="qstep"><span class="t">t4&ndash;10</span><span>Reads prompt, cluster state, YAML, pod log &hellip;</span></div>
+        <div class="qstep good"><span class="t">t14</span><span>Writes the report &hellip; probe cause quotes <code>initialDelaySeconds: 5</code> &hellip; <code>cache warm-up complete (duration=6.67s)</code> &hellip; &ldquo;takes roughly 8 s to start &hellip; probe fires before the server is listening&rdquo; &hellip; <code>safe_to_rollback: true</code> &hellip; &ldquo;pod-template settings of revision 17, not &hellip; schema changes.&rdquo;</span></div>
+        <div class="qstep"><span class="t">t18&ndash;21</span><span>Verifies every quote is verbatim &hellip; summarises the incident &hellip; submits.</span></div>
+      </div>
+      <div class="qcol">
+        <div class="qhead"><b>GPT-6 Astra</b><span class="score lo">0.75</span></div>
+        <div class="qstep"><span class="t">t3</span><span>Plans: &ldquo;inspect the evidence, write the RCA, and validate its quotes&rdquo; &hellip;</span></div>
+        <div class="qstep"><span class="t">t6</span><span>Dumps cluster state and YAML in one shell call &hellip; checks for <code>apply_patch</code> &hellip;</span></div>
+        <div class="qstep bad"><span class="t">t8</span><span>&ldquo;OOM kills are confirmed. HPA values conflict; rollback safety is unverified&rdquo; &rarr; rollback verdict: <i>not safe</i> &hellip;</span></div>
+        <div class="qstep bad"><span class="t">t9</span><span>Writes the report &hellip; probe cause cites the settings and failures but not the warm-up measurement &hellip; not credited.</span></div>
+        <div class="qstep"><span class="t">t11&ndash;13</span><span>Validates schema, 41 quotes &hellip; submits: &ldquo;&hellip; why rollback safety remains unverified.&rdquo;</span></div>
+      </div>
+      <div class="qcol">
+        <div class="qhead"><b>Qwen3.8-27B base</b><span class="score lo">0.70</span></div>
+        <div class="qstep"><span class="t">t2</span><span>Lists the task directory &hellip;</span></div>
+        <div class="qstep"><span class="t">t4&ndash;10</span><span>Reads the four inputs &hellip;</span></div>
+        <div class="qstep"><span class="t">t12&ndash;16</span><span>Checks the em-dash and column spacing byte by byte &hellip; writes <code>build_rca.py</code> to extract exact lines &hellip;</span></div>
+        <div class="qstep bad"><span class="t">t18</span><span>Builds the report &hellip; probe cause: &ldquo;the app needs ~6.6 s &hellip; for cache warm-up &hellip;&rdquo; but evidence = probe-failure lines + YAML block only &hellip; &ldquo;Do NOT roll back &hellip; it would OOM/crash-loop in the same way&rdquo; &rarr; <code>safe_to_rollback: false</code>.</span></div>
+        <div class="qstep"><span class="t">t20&ndash;24</span><span>Independent re-verification: validity, schema, 48 quotes verbatim &hellip; submits.</span></div>
+      </div>
+      <div class="qcol ours">
+        <div class="qhead"><b><span class="sc">Tev</span>-27B (ours)</b><span class="score hi">0.97</span></div>
+        <div class="qstep"><span class="t">t2&ndash;18</span><span>Reads the four inputs &hellip; confirms planned quotes byte for byte &hellip;</span></div>
+        <div class="qstep good"><span class="t">t20</span><span>Probe cause: <code>initialDelaySeconds: 5</code> &hellip; <code>cache warm-up complete (duration=6.67s &hellip;)</code> &hellip; &ldquo;warm-up &hellip; longer than the 5 s initial delay&rdquo; &hellip;</span></div>
+        <div class="qstep"><span class="t">t28</span><span>Verifies 29 quotes &hellip;</span></div>
+        <div class="qstep good"><span class="t">t30</span><span>Reconsiders rollback: &ldquo;&hellip; &lsquo;started flapping after a routine chart-value change&rsquo; &hellip; roll back first&rdquo; &rarr; <code>safe_to_rollback: true</code>.</span></div>
+        <div class="qstep"><span class="t">t32&ndash;40</span><span>Re-validates &hellip; submits.</span></div>
+      </div>
+    </div>
+    <div class="qkey"><span><i style="background:var(--green-light)"></i>decision that earns a grader component</span><span><i style="background:#f9d4da"></i>decision that forfeits one</span></div>
+  </div>
+</section>
+
+<section id="bibtex">
+  <div class="wrap narrow">
+    <span class="eyebrow">Cite</span>
+    <h2>BibTeX</h2>
+    <div class="bib">
+      <button class="copy" type="button" id="copy-bib">Copy</button>
+<pre id="bib-text">@misc{hu2026tev,
+  title  = {{Tev}: Scaling Long-Horizon Agentic Environments with Dense Progress Rewards},
+  author = {Hu, Wenbo and Pramanick, Shraman and Singh, Krishna Kumar and
+            Peng, Nanyun and Chang, Kai-Wei and Lee, Yong Jae},
+  year   = {2026},
+  note   = {Preprint}
+}</pre>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="sc">Tev</span> &middot; Adobe Research &amp; University of California, Los Angeles &middot; 2026
+  </div>
+</footer>
+</body>
+</html>
