@@ -25,8 +25,10 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | `videos/tev_launch_v6.mp4` | Launch video, shown first on the page; re-encoded from `launch/video/out/tev_launch_v6.mp4` (H.264 CRF 20) to stay under GitHub's 100 MB file limit |
 | `videos/tev_academic.mp4` | Paper video, shown after the abstract; a copy of `launch/tev_academic.mp4` |
 | `static/images/*_poster.webp` | Poster frames for the two videos |
+| `static/tev_paper.pdf` | The paper, linked from the **Paper** button; a copy of `main_red.pdf` (red-theme build) from the `Tev_arXiv` repo |
 
 Every number in the tables is copied from the paper's LaTeX source (`main.tex`). If the paper
 changes, update the tables here to match.
 
+The Paper button serves `static/tev_paper.pdf`; when the paper changes, copy the new `main_red.pdf` over it.
 The arXiv, code, model and X buttons are marked "soon"; swap in the real links once they exist.
