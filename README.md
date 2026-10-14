@@ -31,4 +31,5 @@ Every number in the tables is copied from the paper's LaTeX source (`main.tex`).
 changes, update the tables here to match.
 
 The Paper button serves `static/tev_paper.pdf`; when the paper changes, copy the new `main_red.pdf` over it.
-The arXiv, code, model and X buttons are marked "soon"; swap in the real links once they exist.
+The arXiv button links to <https://arxiv.org/pdf/2610.18868>. The code, model and X buttons are marked "soon";
+swap in the real links once they exist.
