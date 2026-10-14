@@ -31,5 +31,6 @@ Every number in the tables is copied from the paper's LaTeX source (`main.tex`).
 changes, update the tables here to match.
 
 The Paper button serves `static/tev_paper.pdf`; when the paper changes, copy the new `main_red.pdf` over it.
-The arXiv button links to <https://arxiv.org/abs/2610.18868>. The code, model and X buttons are marked "soon";
-swap in the real links once they exist.
+The arXiv button links to <https://arxiv.org/abs/2610.18868>. The two Hugging Face buttons link to the model
+weights, <https://huggingface.co/gordonhu/Tev-27B> and <https://huggingface.co/gordonhu/Tev-320B>. The code, data
+and X buttons are marked "soon"; swap in the real links once they exist.
